@@ -1,8 +1,5 @@
-import http.HttpRequest;
 import http.HttpStatus;
 import http.ResponseEntity;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class Controller {
     public ResponseEntity checkAlive() {

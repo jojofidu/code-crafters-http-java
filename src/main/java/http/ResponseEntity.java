@@ -1,17 +1,17 @@
 package http;
 
-import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import java.util.Optional;
 import java.util.TreeMap;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.Getter;
 
 @Builder
 @Getter
 public class ResponseEntity {
 
+    @Default
     private String httpVersion = "HTTP/1.1";
     private final HttpStatus status;
     private final Map<String, String> headers;

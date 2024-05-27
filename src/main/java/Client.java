@@ -1,8 +1,8 @@
 import http.HttpMethod;
 import http.HttpRequest;
+import http.HttpStatus;
 import http.InvalidHttpRequest;
 import http.ResponseEntity;
-import http.HttpStatus;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
