@@ -1,5 +1,10 @@
 import http.HttpStatus;
 import http.ResponseEntity;
+import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Paths;
 
 public class Controller {
     public ResponseEntity checkAlive() {
@@ -30,6 +35,22 @@ public class Controller {
             }
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    public ResponseEntity storeFile(String rawFilePath, String body) {
+        var filePath = Paths.get(Main.directory, rawFilePath);
+        try {
+            Files.createFile(filePath);
+            Files.writeString(filePath, body);
+            return ResponseEntity.status(HttpStatus.CREATED);
+        } catch (FileAlreadyExistsException e) {
+            return ResponseEntity.plainText(HttpStatus.BAD_REQUEST,
+                String.format("File %s already exists.", rawFilePath));
+        } catch (IOException | OutOfMemoryError | SecurityException e) {
+            System.out.println("ERROR reading file in getFileContents...");
+            e.printStackTrace();
+            return ResponseEntity.plainText(HttpStatus.BAD_REQUEST, "Contact Admin!");
         }
     }
 }

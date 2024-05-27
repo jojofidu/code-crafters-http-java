@@ -9,5 +9,5 @@ public enum HttpMethod {
     PUT("PUT"),
     DELETE("DEL");
 
-    private final String key;
+    public final String key;
 }

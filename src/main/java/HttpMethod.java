@@ -4,7 +4,7 @@ public enum HttpMethod {
     PUT("PUT"),
     DELETE("DEL");
 
-    private final String key;
+    public final String key;
 
     private HttpMethod(String key) {
         this.key = key;

@@ -66,6 +66,14 @@ public class Client implements Runnable {
              */
             var filePath = requestPathSplit[0];
             return controller.getFileContents(filePath);
+        } else if (HttpMethod.POST.equals(request.getMethod()) && request.getPath().startsWith("/files")) {
+            // validate path breakage number (maybe separate method)
+            var requestPathSplit = request.getPath().replace("/files/", "").split("/");
+            if (Main.directory == null || requestPathSplit.length > 1) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST);
+            }
+            var filePath = requestPathSplit[0];
+            return controller.storeFile(filePath, request.getBody());
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND);
     }
