@@ -2,6 +2,9 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.security.cert.CRL;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Main {
 
@@ -11,6 +14,7 @@ public class Main {
 
   private enum HttpStatus {
     OK("200 OK"),
+    BAD_REQUEST("400 Bad Request"),
     NOT_FOUND("404 Not Found");
 
     private String key;
@@ -45,6 +49,8 @@ public class Main {
       return handleRoot();
     } else if (requestLine[0].equals("GET") && requestLine[1].startsWith("/echo")) {
       return handleEcho(requestLine[1]);
+    } else if (requestLine[0].equals("GET") && requestLine[1].startsWith("/user-agent")) {
+      return handleUserAgent(request);
     } else {
       return createHttpResponse(HttpStatus.NOT_FOUND);
     }
@@ -61,6 +67,17 @@ public class Main {
     return createPlainTextHttpResponse(HttpStatus.OK, echo);
   }
 
+  static String handleUserAgent(String request) {
+    Matcher matcher = Pattern.compile("User-Agent: .+?"+ CRLF).matcher(request);
+    if (!matcher.find()) {
+      return createHttpResponse(HttpStatus.BAD_REQUEST);
+    }
+    String userAgent = matcher.group()
+        .replaceFirst("User-Agent: ", "")
+        .replaceFirst(CRLF, "");
+    return createPlainTextHttpResponse(HttpStatus.OK, userAgent);
+  }
+
   static String createHttpResponse(HttpStatus httpStatus) {
     return String.format("%s %s%s%s", HTTP_VERSION, httpStatus.key, CRLF, CRLF);
   }
@@ -68,7 +85,7 @@ public class Main {
   static String createPlainTextHttpResponse(HttpStatus httpStatus, String body) {
     return HTTP_VERSION + " "  + httpStatus.key + CRLF
         + "Content-Type: " + "text/plain" + CRLF
-        + "Content-Length: " + body.getBytes(StandardCharsets.UTF_8).length + CRLF
+        + "Content-Length: " + body.length() + CRLF
         + CRLF
         + body;
   }
