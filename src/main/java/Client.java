@@ -3,10 +3,12 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class Client implements Runnable {
     private static final byte[] HTTP_VERSION_BYTES = "HTTP/1.1".getBytes(StandardCharsets.UTF_8);
@@ -123,14 +125,18 @@ public class Client implements Runnable {
         }
     }
 
+    // TODO unsure if I should just choose one, or send them all back... will figure out in next, maybe?
     private void processEncoding(HttpRequest request, ResponseEntity response) {
         var requestHttpEncoding = request != null
             ? request.getHeaders().get(HttpHeader.ACCEPT_ENCODING.key)
             : null;
         if (requestHttpEncoding != null) {
-            if (SUPPORTED_HTTP_ENCODINGS.contains(requestHttpEncoding.toLowerCase(Locale.ROOT))) {
-                response.addHeader(HttpHeader.CONTENT_ENCODING.key, requestHttpEncoding);
-            }
+             var allAcceptableEncodings = Arrays.stream(requestHttpEncoding.split(","))
+                .map(String::trim)
+                 .map(encoding -> encoding.toLowerCase(Locale.ROOT))
+                .filter(SUPPORTED_HTTP_ENCODINGS::contains)
+                .collect(Collectors.joining(", "));
+            response.addHeader(HttpHeader.CONTENT_ENCODING.key, allAcceptableEncodings);
         }
     }
 }
