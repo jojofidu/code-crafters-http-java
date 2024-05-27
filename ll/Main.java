@@ -11,7 +11,7 @@ public class Main {
             serverSocket.setReuseAddress(true);
 
             while (true) {
-                new Client(serverSocket.accept()).run();
+                new fake.Client(serverSocket.accept()).run();
             }
 
         } catch (IOException e) {

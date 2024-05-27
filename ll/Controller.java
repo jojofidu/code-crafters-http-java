@@ -1,4 +1,5 @@
-package fake;
+import http.HttpStatus;
+import http.ResponseEntity;
 
 public class Controller {
     public ResponseEntity checkAlive() {

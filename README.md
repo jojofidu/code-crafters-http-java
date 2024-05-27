@@ -37,3 +37,16 @@ Note: This section is for stages 2 and beyond.
    `src/main/java/Main.java`.
 1. Commit your changes and run `git push origin master` to submit your solution
    to CodeCrafters. Test output will be streamed to your terminal.
+
+
+# My
+
+- Start server
+
+- Accept client connections, in Threads (have a Client that is a Runnable?)
+
+- parse request (Version, Method, Path, Headers, Body)
+
+- handle request (just like we do)
+
+- send response (just have a better builder)

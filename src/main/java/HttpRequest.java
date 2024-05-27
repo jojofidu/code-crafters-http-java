@@ -1,5 +1,3 @@
-package fake;
-
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;

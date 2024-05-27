@@ -1,8 +1,3 @@
-import http.HttpMethod;
-import http.HttpRequest;
-import http.HttpStatus;
-import http.InvalidHttpRequest;
-import http.ResponseEntity;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
@@ -10,9 +5,7 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.Map.Entry;
 import java.util.UUID;
-import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
 public class Client implements Runnable {
     private static final byte[] HTTP_VERSION_BYTES = "HTTP/1.1".getBytes(StandardCharsets.UTF_8);
     private static final byte[] CRLF_BYTES = "\r\n".getBytes(StandardCharsets.UTF_8);
@@ -22,11 +15,15 @@ public class Client implements Runnable {
     private final Socket socket;
     private final Controller controller = new Controller();
 
+    public Client(Socket socket) {
+        this.socket = socket;
+    }
+
     @Override
     public void run() {
         try {
             var id = UUID.randomUUID();
-            System.out.println("New client connection."+id);
+            System.out.println("V2:: New client connection."+id);
             ResponseEntity response;
             try {
                 var request = HttpRequest.parse(socket.getInputStream());

@@ -1,6 +1,3 @@
-import http.HttpStatus;
-import http.ResponseEntity;
-
 public class Controller {
     public ResponseEntity checkAlive() {
         return ResponseEntity.status(HttpStatus.OK);
