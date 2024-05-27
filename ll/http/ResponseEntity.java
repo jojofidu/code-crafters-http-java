@@ -27,8 +27,9 @@ public class ResponseEntity {
         this.body = body;
     }
 
-    public void addHeader(String key, String value) {
+    public ResponseEntity addHeader(String key, String value) {
         headers.put(key, value);
+        return this;
     }
 
     public static ResponseEntity status(HttpStatus status) {

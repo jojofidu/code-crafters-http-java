@@ -55,9 +55,19 @@ public class Client implements Runnable {
             return controller.echoRequestParam(request.getPath());
         } else if (HttpMethod.GET.equals(request.getMethod()) && request.getPath().startsWith("/user-agent")) {
             return controller.echoUserAgent(request.getHeaders().get("User-Agent"));
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND);
+        } else if (HttpMethod.GET.equals(request.getMethod()) && request.getPath().startsWith("/files")) {
+            // validate path breakage number (maybe separate method)
+            var requestPathSplit = request.getPath().replace("/files/", "").split("/");
+            if (Main.directory == null || requestPathSplit.length > 1) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST);
+            }
+            /* If no need of validation above, just use (simplicity):
+                var filePath = path.substring("/files/".length())
+             */
+            var filePath = requestPathSplit[0];
+            return controller.getFileContents(filePath);
         }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND);
     }
 
     public void send(ResponseEntity response, OutputStream outputStream) throws IOException {
