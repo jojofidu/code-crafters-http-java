@@ -3,7 +3,9 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.UUID;
 
 public class Client implements Runnable {
@@ -11,6 +13,8 @@ public class Client implements Runnable {
     private static final byte[] CRLF_BYTES = "\r\n".getBytes(StandardCharsets.UTF_8);
     private static final byte[] WHITE_SPACE_BYTES = " ".getBytes(StandardCharsets.UTF_8);
     private static final byte[] COLON_BYTES = ":".getBytes(StandardCharsets.UTF_8);
+
+    private static final Set<String> SUPPORTED_HTTP_ENCODINGS = Set.of("gzip");
 
     private final Socket socket;
     private final Controller controller = new Controller();
@@ -24,9 +28,10 @@ public class Client implements Runnable {
         try {
             var id = UUID.randomUUID();
             System.out.println("V2:: New client connection."+id);
+            HttpRequest request = null;
             ResponseEntity response;
             try {
-                var request = HttpRequest.parse(socket.getInputStream());
+                request = HttpRequest.parse(socket.getInputStream());
                 response = handleRequestMappings(request, id);
             } catch (InvalidHttpRequest e) {
                 response = ResponseEntity.plainText(HttpStatus.BAD_REQUEST, e.getMessage());
@@ -36,7 +41,7 @@ public class Client implements Runnable {
                 e.printStackTrace();
                 response = ResponseEntity.plainText(HttpStatus.INTERNAL_ERROR, e.getMessage());
             }
-            send(response, socket.getOutputStream());
+            send(request, response, socket.getOutputStream());
             socket.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -75,7 +80,7 @@ public class Client implements Runnable {
         return ResponseEntity.status(HttpStatus.NOT_FOUND);
     }
 
-    public void send(ResponseEntity response, OutputStream outputStream) throws IOException {
+    public void send(HttpRequest request, ResponseEntity response, OutputStream outputStream) throws IOException {
         /* workds, but I don't think it its suposed to send entire thing straight out, maybe even use bufferedWriter
 
         var x = "HTTP/1.1 " + response.getStatus().getLine() + "\r\n";
@@ -88,6 +93,8 @@ public class Client implements Runnable {
         }
         outputStream.write(x.getBytes(StandardCharsets.UTF_8));
          */
+
+        processEncoding(request, response);
 
         outputStream.write(HTTP_VERSION_BYTES);
         outputStream.write(WHITE_SPACE_BYTES);
@@ -112,6 +119,17 @@ public class Client implements Runnable {
                 System.out.println("test this!");
                 var objectOutputStream = new ObjectOutputStream(outputStream);
                 objectOutputStream.writeObject(response.getBody());
+            }
+        }
+    }
+
+    private void processEncoding(HttpRequest request, ResponseEntity response) {
+        var requestHttpEncoding = request != null
+            ? request.getHeaders().get(HttpHeader.ACCEPT_ENCODING.key)
+            : null;
+        if (requestHttpEncoding != null) {
+            if (SUPPORTED_HTTP_ENCODINGS.contains(requestHttpEncoding.toLowerCase(Locale.ROOT))) {
+                response.addHeader(HttpHeader.CONTENT_ENCODING.key, requestHttpEncoding);
             }
         }
     }
