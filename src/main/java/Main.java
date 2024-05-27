@@ -42,18 +42,34 @@ public class Main {
   static String handleRequestMappings(String request) {
     String[] requestLine = request.split(CRLF)[0].split(" ");
     if (requestLine[0].equals("GET") && requestLine[1].equals("/")) {
-      return handleGetRoot();
+      return handleRoot();
+    } else if (requestLine[0].equals("GET") && requestLine[1].startsWith("/echo")) {
+      return handleEcho(requestLine[1]);
     } else {
       return createHttpResponse(HttpStatus.NOT_FOUND);
     }
 
   }
 
-  static String handleGetRoot() {
+  static String handleRoot() {
     return createHttpResponse(HttpStatus.OK);
+  }
+
+  static String handleEcho(String requestPath) {
+    // either split("/) and check it's only 2 or bad_request or this:
+    String echo = requestPath.split("/", 3)[2];
+    return createPlainTextHttpResponse(HttpStatus.OK, echo);
   }
 
   static String createHttpResponse(HttpStatus httpStatus) {
     return String.format("%s %s%s%s", HTTP_VERSION, httpStatus.key, CRLF, CRLF);
+  }
+
+  static String createPlainTextHttpResponse(HttpStatus httpStatus, String body) {
+    return HTTP_VERSION + " "  + httpStatus.key + CRLF
+        + "Content-Type: " + "text/plain" + CRLF
+        + "Content-Length: " + body.getBytes(StandardCharsets.UTF_8).length + CRLF
+        + CRLF
+        + body;
   }
 }
