@@ -82,20 +82,7 @@ public class Client implements Runnable {
     }
 
     public void send(HttpRequest request, ResponseEntity response, OutputStream outputStream) throws IOException {
-        /* workds, but I don't think it its suposed to send entire thing straight out, maybe even use bufferedWriter
-
-        var x = "HTTP/1.1 " + response.getStatus().getLine() + "\r\n";
-        for (Entry<String, String> header : response.getHeaders().entrySet()) {
-            x += header.getKey() + ": " + header.getValue() + "\r\n";
-        }
-        x += "\r\n";
-        if (response.getBody() != null) {
-            x += response.getBody();
-        }
-        outputStream.write(x.getBytes(StandardCharsets.UTF_8));
-         */
-
-        processEncoding(request, response);
+        var encodedBody = processEncoding(request, response);
 
         outputStream.write(HTTP_VERSION_BYTES);
         outputStream.write(WHITE_SPACE_BYTES);
@@ -113,29 +100,40 @@ public class Client implements Runnable {
 
         if (response.getBody() != null) {
             if (response.getBody() instanceof String) {
-                // shows as text on curl, which is correct!
-                outputStream.write(((String) response.getBody()).getBytes());
-            } else {
-                // shows as bytes on curl, so incorrect! but maybe useful for files? but what if body is not a string? or is it mandatory? its not...
-                System.out.println("test this!");
-                var objectOutputStream = new ObjectOutputStream(outputStream);
-                objectOutputStream.writeObject(response.getBody());
+                outputStream.write(encodedBody.orElse(((String) response.getBody()).getBytes()));
             }
+            // TODO it could be bytes[], not as of right now tho
         }
     }
 
-    // TODO unsure if I should just choose one, or send them all back... will figure out in next, maybe?
-    private void processEncoding(HttpRequest request, ResponseEntity response) {
-        var requestHttpEncoding = request != null
-            ? request.getHeaders().get(HttpHeader.ACCEPT_ENCODING.key)
-            : null;
-        if (requestHttpEncoding != null) {
-            var allAcceptableEncodings = Arrays.stream(requestHttpEncoding.split(","))
+    private Optional<byte[]> processEncoding(HttpRequest request, ResponseEntity response) {
+        var encodedBody = checkEncoding(request, response)
+            .map(acceptedSupportedEncoding -> {
+                response.addHeader(HttpHeader.CONTENT_ENCODING.key, acceptedSupportedEncoding);
+                if (acceptedSupportedEncoding.toLowerCase(Locale.ROOT).equals("gzip")) {
+                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                    try (GZIPOutputStream gzipOutputStream = new GZIPOutputStream(byteArrayOutputStream)) {
+                        gzipOutputStream.write(((String) response.getBody()).getBytes(StandardCharsets.UTF_8));
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    return byteArrayOutputStream.toByteArray();
+                }
+                return null;
+            });
+
+        encodedBody.ifPresent(b -> response.addHeader(HttpHeader.CONTENT_LENGTH.key, String.valueOf(b.length)));
+
+        return encodedBody;
+    }
+
+    private Optional<String> checkEncoding(HttpRequest request, ResponseEntity response) {
+        return Optional.ofNullable(request)
+            .map(httpRequest -> httpRequest.getHeaders().get(HttpHeader.ACCEPT_ENCODING.key))
+            .flatMap(e -> Arrays.stream(e.split(","))
                 .map(String::trim)
                 .map(encoding -> encoding.toLowerCase(Locale.ROOT))
                 .filter(SUPPORTED_HTTP_ENCODINGS::contains)
-                .collect(Collectors.joining(", "));
-            response.addHeader(HttpHeader.CONTENT_ENCODING.key, allAcceptableEncodings);
-        }
+                .findFirst());
     }
 }
