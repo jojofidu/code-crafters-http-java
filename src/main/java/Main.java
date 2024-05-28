@@ -14,14 +14,12 @@ public class Main {
             }
         }
 
-        try {
-            var serverSocket = new ServerSocket(SERVER_PORT);
+        try (var serverSocket = new ServerSocket(SERVER_PORT)) {
             serverSocket.setReuseAddress(true);
 
             while (true) {
                 new Client(serverSocket.accept()).run();
             }
-
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

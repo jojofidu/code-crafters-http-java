@@ -1,6 +1,9 @@
 package http;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Optional;
@@ -30,7 +33,7 @@ public class HttpRequest {
     public static HttpRequest parse(InputStream inputStream) throws IOException {
         var reader = new BufferedReader(new InputStreamReader(inputStream));
 
-        /* Cool regex ideia
+        /* TODO? Cool regex ideia
             static private final Pattern REQUEST_LINE_REGEX = Pattern.compile("(HEAD|GET|POST|PUT|PATCH|DELETE|OPTIONS) (\\S+) HTTP/1.1");
 
             final Matcher requestLineMatcher = REQUEST_LINE_REGEX.matcher(reader.readLine());

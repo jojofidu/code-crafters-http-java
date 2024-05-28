@@ -14,39 +14,95 @@ and more.
 **Note**: If you're viewing this repo on GitHub, head over to
 [codecrafters.io](https://codecrafters.io) to try the challenge.
 
-# Passing the first stage
+# Run in codecrafters
 
-The entry point for your HTTP server implementation is in
-`src/main/java/Main.java`. Study and uncomment the relevant code, and push your
-changes to pass the first stage:
+## Set remote git URL
 
-```sh
-git add .
-git commit -m "pass 1st stage" # any msg
-git push origin master
+```shell
+git remote set-url origin https://git.codecrafters.io/744192a36faeb098
+```
+will need to reset for github afterwards
+
+Is it possible to have two? Maybe, and call one origin and other originX, this could be better!
+
+## Lombok issue
+
+When running in code-crafters lombok is not working.
+So either "Delombok" the existing code or use the /no-lombok code
+
+# Test
+
+Server alive
+```shell
+curl -v http://localhost:4421
 ```
 
-Time to move on to the next stage!
+Echo value back
+```shell
+curl -v http://localhost:4421/echo/<value>
+```
 
-# Stage 2 & beyond
+Return User-Agent header
+```shell
+curl -v http://localhost:4421/user-agent
+curl -v --header "User-Agent: My-Agent" http://localhost:4421/user-agent
+```
 
-Note: This section is for stages 2 and beyond.
+Concurrent connections
+```shell
+(sleep 3 && printf "GET / HTTP/1.1\r\n\r\n") | nc localhost 4221 &
+(sleep 3 && printf "GET / HTTP/1.1\r\n\r\n") | nc localhost 4221 &
+(sleep 3 && printf "GET / HTTP/1.1\r\n\r\n") | nc localhost 4221 &
+```
 
-1. Ensure you have `java (21)` installed locally
-1. Run `./your_server.sh` to run your program, which is implemented in
-   `src/main/java/Main.java`.
-1. Commit your changes and run `git push origin master` to submit your solution
-   to CodeCrafters. Test output will be streamed to your terminal.
+**To use /files API we need to start program with `--directory` flag**
 
+Get file contents
+```shell
+curl -v http://localhost:4421/files/<file-path>
+```
 
-# My
+Store file
+```shell
+curl -v http://localhost:4421/files/<file-path> -d "My file data\nIshere"
+```
 
-- Start server
+**Note for Encodings:** 
 
-- Accept client connections, in Threads (have a Client that is a Runnable?)
+Request 1:
+```
+GET /echo/foo HTTP/1.1
+...
+Accept-Encoding: unsupported-encoding-1, gzip
+```
 
-- parse request (Version, Method, Path, Headers, Body)
+Response 1:
+```
+HTTP/1.1 200 OK
+Content-Encoding: gzip
+Content-Type: text/plain
+Content-Length: 3
 
-- handle request (just like we do)
+foo
+```
 
-- send response (just have a better builder)
+Request 2:
+```
+GET /echo/foo HTTP/1.1
+...
+Accept-Encoding: unsupported-encoding-1
+```
+
+Response 2:
+```
+HTTP/1.1 200 OK
+Content-Type: text/plain
+Content-Length: 3
+
+bar
+```
+
+Receive gzip encoding of echo
+```shell
+curl -v --header "Accept-Encoding: unsupported-1, gzip" -o <path-for-new-gzip-file> http://localhost:4221/echo/<value>
+```
