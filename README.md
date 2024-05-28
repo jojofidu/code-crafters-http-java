@@ -48,11 +48,9 @@ curl -v http://localhost:4421/user-agent
 curl -v --header "User-Agent: My-Agent" http://localhost:4421/user-agent
 ```
 
-Concurrent connections
+Concurrent connections, need to use command in 2 terminals
 ```shell
-(sleep 3 && printf "GET / HTTP/1.1\r\n\r\n") | nc localhost 4221 &
-(sleep 3 && printf "GET / HTTP/1.1\r\n\r\n") | nc localhost 4221 &
-(sleep 3 && printf "GET / HTTP/1.1\r\n\r\n") | nc localhost 4221 &
+nc localhost 4221
 ```
 
 **To use /files API we need to start program with `--directory` flag**

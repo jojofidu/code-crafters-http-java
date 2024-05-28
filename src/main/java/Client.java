@@ -19,7 +19,7 @@ import java.util.zip.GZIPOutputStream;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class Client implements Runnable {
+public class Client extends Thread {
     private static final byte[] HTTP_VERSION_BYTES = "HTTP/1.1".getBytes(StandardCharsets.UTF_8);
     private static final byte[] CRLF_BYTES = "\r\n".getBytes(StandardCharsets.UTF_8);
     private static final byte[] WHITE_SPACE_BYTES = " ".getBytes(StandardCharsets.UTF_8);
@@ -30,7 +30,6 @@ public class Client implements Runnable {
     private final Socket socket;
     private final Controller controller = new Controller();
 
-    @Override
     public void run() {
         try {
             var id = UUID.randomUUID();

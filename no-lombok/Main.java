@@ -18,7 +18,7 @@ public class Main {
             serverSocket.setReuseAddress(true);
 
             while (true) {
-                new Client(serverSocket.accept()).run();
+                new Client(serverSocket.accept()).start();
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

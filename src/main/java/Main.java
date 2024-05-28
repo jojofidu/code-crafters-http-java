@@ -18,7 +18,8 @@ public class Main {
             serverSocket.setReuseAddress(true);
 
             while (true) {
-                new Client(serverSocket.accept()).run();
+                //If in java 21, could use Thread.virtualThread() and Client would not extend thread
+                new Client(serverSocket.accept()).start();
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
